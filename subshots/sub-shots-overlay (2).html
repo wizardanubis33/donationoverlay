@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sub Shots Overlay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --warm-black: 26,18,16;
+    --amber-hi:#F2B34E;
+    --amber:#E8A23D;
+    --amber-deep:#C7792A;
+    --gold:#FFD98A;
+    --cream:#F7EEE1;
+    --muted:#B98A4E;
+    --glow: 232,162,61;
+    --ease: cubic-bezier(.2,.9,.25,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    background:transparent;
+    font-family:'Space Mono',ui-monospace,monospace;
+    display:flex; align-items:flex-start; justify-content:flex-start;
+    padding:26px;
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+    color:var(--cream);
+  }
+
+  .badge{
+    position:relative;
+    display:flex; align-items:center; gap:24px;
+    padding:22px 32px 22px 26px;
+    border-radius:20px;
+    background:radial-gradient(130% 150% at 0% 0%, rgba(74,46,29,.74), rgba(var(--warm-black),.84) 62%);
+    border:1px solid rgba(var(--glow),.30);
+    box-shadow:0 12px 34px rgba(0,0,0,.46), inset 0 1px 0 rgba(255,220,150,.13);
+    backdrop-filter:blur(4px);
+    -webkit-backdrop-filter:blur(4px);
+    transition:transform .18s var(--ease);
+  }
+  .badge.bump{ animation:bump .55s var(--ease); }
+  @keyframes bump{
+    0%{transform:scale(1);}
+    22%{transform:scale(1.05);}
+    60%{transform:scale(.99);}
+    100%{transform:scale(1);}
+  }
+
+  .glass-wrap{ position:relative; width:70px; height:84px; flex:0 0 auto; }
+  svg{ display:block; width:100%; height:100%; overflow:visible; }
+  .glass-wrap.pour .liquid{ animation:pour .72s var(--ease); }
+  @keyframes pour{
+    0%{ transform:translateY(34px); }
+    45%{ transform:translateY(-3px); }
+    72%{ transform:translateY(2px); }
+    100%{ transform:translateY(0); }
+  }
+  .droplet{ opacity:0; }
+  .glass-wrap.pour .droplet{ animation:drop .5s ease-out; }
+  @keyframes drop{
+    0%{ opacity:0; transform:translateY(-16px) scale(.6);}
+    30%{ opacity:1;}
+    100%{ opacity:0; transform:translateY(6px) scale(1);}
+  }
+
+  .info{ display:flex; flex-direction:column; align-items:flex-start; line-height:1; }
+
+  /* elevated headline rule — the promise / call to action */
+  .rule{
+    font-family:'Anton',Impact,system-ui,sans-serif; font-weight:400;
+    font-size:28px; line-height:1; letter-spacing:.05em;
+    color:var(--cream); text-transform:uppercase; white-space:nowrap;
+    width:max-content; margin-bottom:14px; position:relative;
+    text-shadow:0 1px 0 rgba(0,0,0,.4);
+  }
+  .rule .hl{ color:var(--amber-hi); text-shadow:0 0 15px rgba(var(--glow),.55); }
+  .rule::after{
+    content:""; position:absolute; left:0; bottom:-7px; height:2px; width:100%;
+    border-radius:2px; opacity:.75;
+    background:linear-gradient(90deg, rgba(var(--glow),.95), rgba(var(--glow),0) 92%);
+  }
+  .rule.flash{ animation:ruleflash .6s var(--ease); }
+  @keyframes ruleflash{
+    0%{ text-shadow:0 1px 0 rgba(0,0,0,.4); transform:scale(1);}
+    25%{ text-shadow:0 0 20px rgba(var(--glow),.9), 0 1px 0 rgba(0,0,0,.4); transform:scale(1.04);}
+    100%{ text-shadow:0 1px 0 rgba(0,0,0,.4); transform:scale(1);}
+  }
+
+  .countrow{ display:flex; align-items:baseline; gap:14px; }
+  .count{
+    display:inline-block;
+    font-family:'Anton',Impact,system-ui,sans-serif; font-weight:400;
+    font-size:66px; line-height:.84; letter-spacing:.01em;
+    color:var(--gold);
+    text-shadow:0 2px 0 rgba(0,0,0,.35), 0 0 22px rgba(var(--glow),.35);
+  }
+  .count.tick{ animation:tick .4s var(--ease); }
+  @keyframes tick{
+    0%{transform:translateY(0) scale(1);}
+    30%{transform:translateY(-4px) scale(1.12);}
+    100%{transform:translateY(0) scale(1);}
+  }
+  .label{
+    display:inline-block;
+    font-family:'Space Mono',monospace; font-weight:700;
+    font-size:12.5px; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--muted); transform:translateY(-6px); white-space:nowrap;
+  }
+
+  .float{
+    position:absolute; right:30px; top:14px;
+    font-family:'Anton',sans-serif; font-size:26px; color:var(--amber-hi);
+    text-shadow:0 0 16px rgba(var(--glow),.65);
+    opacity:0; pointer-events:none;
+  }
+  .float.go{ animation:floatup 1s ease-out; }
+  @keyframes floatup{
+    0%{opacity:0; transform:translateY(8px) scale(.8);}
+    20%{opacity:1;}
+    100%{opacity:0; transform:translateY(-36px) scale(1.1);}
+  }
+
+  .controls{
+    position:absolute; left:0; right:0; bottom:-16px;
+    display:flex; justify-content:center; gap:8px;
+    opacity:0; transform:translateY(-4px); pointer-events:none;
+    transition:opacity .15s ease, transform .15s ease;
+  }
+  .badge:hover .controls{ opacity:1; transform:translateY(0); pointer-events:auto; }
+  .btn{
+    font-family:'Space Mono',monospace; font-weight:700; font-size:13px;
+    color:var(--cream); background:rgba(20,14,12,.94);
+    border:1px solid rgba(var(--glow),.42); border-radius:9px;
+    padding:5px 12px; cursor:pointer; user-select:none;
+    transition:background .12s ease, transform .08s ease;
+  }
+  .btn:hover{ background:rgba(var(--glow),.22); }
+  .btn:active{ transform:translateY(1px); }
+  .btn:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+  .btn.reset{ color:#E39; border-color:rgba(210,90,110,.5); }
+  .btn.reset.armed{ background:rgba(210,90,110,.28); color:#fff; }
+
+  @media (prefers-reduced-motion: reduce){
+    .badge.bump,.count.tick,.glass-wrap.pour .liquid,.glass-wrap.pour .droplet,.float.go,.rule.flash{ animation:none !important; }
+    .float.go{ opacity:0; }
+  }
+</style>
+</head>
+<body>
+  <div class="badge" id="badge">
+    <div class="glass-wrap" id="glassWrap">
+      <svg viewBox="0 0 70 84" aria-hidden="true">
+        <defs>
+          <linearGradient id="liq" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#F2B34E"/>
+            <stop offset="1" stop-color="#C7792A"/>
+          </linearGradient>
+          <clipPath id="glassClip">
+            <path d="M13 13 L57 13 L51 69 Q50 75 44 75 L26 75 Q20 75 19 69 Z"/>
+          </clipPath>
+        </defs>
+        <g clip-path="url(#glassClip)">
+          <rect class="liquid" x="11" y="36" width="48" height="48" fill="url(#liq)"/>
+          <rect class="liquid" x="11" y="36" width="48" height="4" fill="#FFE3A6" opacity=".7"/>
+        </g>
+        <path d="M13 13 L57 13 L51 69 Q50 75 44 75 L26 75 Q20 75 19 69 Z"
+              fill="none" stroke="#FFD98A" stroke-width="2.5" stroke-linejoin="round" opacity=".92"/>
+        <line x1="11" y1="13" x2="59" y2="13" stroke="#FFE9C2" stroke-width="3.3" stroke-linecap="round"/>
+        <circle class="droplet" cx="35" cy="9" r="3.3" fill="#F2B34E"/>
+      </svg>
+    </div>
+
+    <div class="info">
+      <div class="rule" id="rule"><span class="hl">1</span> Sub <span class="hl">=</span> <span class="hl">1</span> Shot</div>
+      <div class="countrow">
+        <span class="count" id="count">0</span>
+        <span class="label" id="label">shots owed</span>
+      </div>
+    </div>
+
+    <div class="float" id="float">+1</div>
+
+    <div class="controls">
+      <button class="btn" id="minus" title="Remove one (down arrow / minus)">&ndash;1</button>
+      <button class="btn" id="plus" title="Add one (up arrow / plus / space)">+1</button>
+      <button class="btn reset" id="reset" title="Reset to zero">reset</button>
+    </div>
+  </div>
+
+<script>
+(function(){
+  var params = new URLSearchParams(location.search);
+  var STORE_KEY = 'gucciho_sub_shots_v1';
+
+  function load(){
+    try { var v = localStorage.getItem(STORE_KEY); return v==null?null:parseInt(v,10); }
+    catch(e){ return null; }
+  }
+  function save(n){ try { localStorage.setItem(STORE_KEY, String(n)); } catch(e){} }
+
+  var count = 0;
+  var pCount = params.get('count');
+  if(pCount!=null && !isNaN(parseInt(pCount,10))) count = Math.max(0, parseInt(pCount,10));
+  else { var s = load(); if(s!=null && !isNaN(s)) count = Math.max(0, s); }
+
+  var pRule = params.get('rule');   if(pRule)  document.getElementById('rule').textContent  = pRule;
+  var pLabel = params.get('label'); if(pLabel) document.getElementById('label').textContent = pLabel;
+
+  var elCount = document.getElementById('count');
+  var elBadge = document.getElementById('badge');
+  var elGlass = document.getElementById('glassWrap');
+  var elFloat = document.getElementById('float');
+  var elRule  = document.getElementById('rule');
+  var elReset = document.getElementById('reset');
+
+  function render(){ elCount.textContent = count; }
+  render();
+
+  function restart(el, cls){ el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+
+  function pulse(dir){
+    restart(elCount, 'tick');
+    if(dir>0){ restart(elBadge,'bump'); restart(elGlass,'pour'); restart(elFloat,'go'); restart(elRule,'flash'); }
+  }
+  function setCount(n, dir){ count = Math.max(0, n); render(); save(count); pulse(dir); }
+  function add(){ setCount(count+1, 1); }
+  function sub(){ setCount(count-1, -1); }
+
+  document.getElementById('plus').addEventListener('click', add);
+  document.getElementById('minus').addEventListener('click', sub);
+
+  var armed=false, armTimer=null;
+  elReset.addEventListener('click', function(){
+    if(!armed){
+      armed=true; elReset.classList.add('armed'); elReset.textContent='sure?';
+      armTimer=setTimeout(function(){ armed=false; elReset.classList.remove('armed'); elReset.textContent='reset'; },2500);
+    } else {
+      clearTimeout(armTimer); armed=false; elReset.classList.remove('armed'); elReset.textContent='reset';
+      setCount(0, 0);
+    }
+  });
+
+  window.addEventListener('keydown', function(e){
+    if(e.repeat) return;
+    if(e.key==='+'||e.key==='='||e.key==='ArrowUp'||e.key===' '){ e.preventDefault(); add(); }
+    else if(e.key==='-'||e.key==='_'||e.key==='ArrowDown'){ e.preventDefault(); sub(); }
+  });
+
+  window.addEventListener('storage', function(e){
+    if(e.key===STORE_KEY && e.newValue!=null){
+      var n=parseInt(e.newValue,10);
+      if(!isNaN(n)){ var dir = n>count?1:(n<count?-1:0); count=Math.max(0,n); render(); if(dir!==0) pulse(dir); }
+    }
+  });
+})();
+</script>
+</body>
+</html>
